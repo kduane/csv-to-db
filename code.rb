@@ -1,9 +1,10 @@
 require 'pg'
 require 'csv'
+require 'pry'
 
 def db_connection
   begin
-    connection = PG.connect(dbname: "")
+    connection = PG.connect(dbname: "ingredients")
     yield(connection)
   ensure
     connection.close
@@ -14,7 +15,7 @@ end
 
 #import data from the CSV file
 db_connection do |conn|
-  CSV.foreach("ingredients.csv", a+) do |row|
+  CSV.foreach("ingredients.csv") do |row|
     ingredient = row[1]
     # export to PSQL database
     conn.exec_params(
@@ -25,4 +26,11 @@ db_connection do |conn|
 end
 
 # pull from database & output on screen
-db_connection do |conn|
+ingredients = db_connection do |conn|
+  conn.exec('SELECT id, ingredient FROM ingredients')
+end
+
+ingredients.to_a.each do |item|
+  puts "#{item["id"]}. #{item["ingredient"]} \n"
+  # binding.pry
+end
